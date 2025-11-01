@@ -44,10 +44,6 @@
 - ✅ **Tratamento de Erros** - Feedback visual claro para erros de rede/API
 - ✅ **Arquitetura MVVM** - Código limpo e organizado
 
-## 📸 Screenshots
-
-> *Adicione screenshots do app aqui*
-
 ## 🚀 Começando
 
 ### Pré-requisitos
@@ -405,3 +401,4 @@ Se você tiver alguma dúvida ou problema:
 **⭐ Se você gostou deste projeto, deixe uma estrela no GitHub!**
 
 Feito com ❤️ e Flutter 🎯
+
