@@ -51,22 +51,66 @@ jobs:
       - name: Configure Xcode for no-code signing
         run: |
           cd ios
-          # Disable automatic code signing in Xcode project
-          sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' Runner.xcodeproj/project.pbxproj || true
-          sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/g' Runner.xcodeproj/project.pbxproj || true
-          sed -i '' 's/CODE_SIGN_IDENTITY = "iPhone Developer";/CODE_SIGN_IDENTITY = "";/g' Runner.xcodeproj/project.pbxproj || true
-          sed -i '' 's/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "iPhone Developer";/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";/g' Runner.xcodeproj/project.pbxproj || true
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' Runner.xcodeproj/project.pbxproj || true
-          # Remove any team ID
-          sed -i '' 's/DEVELOPMENT_TEAM = [A-Z0-9]*;/DEVELOPMENT_TEAM = "";/g' Runner.xcodeproj/project.pbxproj || true
+          python3 << 'EOF'
+          import re
+          
+          # Read the project file
+          with open('Runner.xcodeproj/project.pbxproj', 'r') as f:
+              content = f.read()
+          
+          # Disable code signing completely
+          replacements = [
+              (r'DEVELOPMENT_TEAM = [^;]+;', 'DEVELOPMENT_TEAM = "";'),
+              (r'CODE_SIGN_IDENTITY = "[^"]+";', 'CODE_SIGN_IDENTITY = "";'),
+              (r'"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "[^"]+";', '"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";'),
+              (r'CODE_SIGN_STYLE = Automatic;', 'CODE_SIGN_STYLE = Manual;'),
+              (r'ProvisioningStyle = Automatic;', 'ProvisioningStyle = Manual;'),
+              (r'CODE_SIGNING_REQUIRED = YES;', 'CODE_SIGNING_REQUIRED = NO;'),
+              (r'CODE_SIGNING_ALLOWED = YES;', 'CODE_SIGNING_ALLOWED = NO;'),
+          ]
+          
+          for pattern, replacement in replacements:
+              content = re.sub(pattern, replacement, content)
+          
+          # Write back
+          with open('Runner.xcodeproj/project.pbxproj', 'w') as f:
+              f.write(content)
+          
+          print("✅ Code signing disabled in Xcode project")
+          EOF
 
-      - name: Build iOS
+      - name: Build iOS with xcodebuild directly
         timeout-minutes: 30
-        env:
-          CODE_SIGN_IDENTITY: ""
-          CODE_SIGNING_REQUIRED: "NO"
-          CODE_SIGNING_ALLOWED: "NO"
-        run: flutter build ios --release --no-codesign
+        run: |
+          cd ios
+          echo "🧹 Cleaning previous build..."
+          xcodebuild clean -workspace Runner.xcworkspace -scheme Runner -quiet || true
+          
+          echo "🔨 Building iOS app without code signing..."
+          xcodebuild build \
+            -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            PROVISIONING_PROFILE="" \
+            ONLY_ACTIVE_ARCH=NO \
+            -quiet
+            
+          echo "📦 Copying build output..."
+          mkdir -p ../build/ios/iphoneos
+          if [ -d "build/Release-iphoneos/Runner.app" ]; then
+            cp -R build/Release-iphoneos/Runner.app ../build/ios/iphoneos/Runner.app
+            echo "✅ Build completed successfully!"
+          else
+            echo "❌ Build output not found, trying alternative location..."
+            find . -name "Runner.app" -type d | head -1 | xargs -I {} cp -R {} ../build/ios/iphoneos/Runner.app || exit 1
+          fi
 
       - name: Create Payload directory
         run: mkdir -p Payload
