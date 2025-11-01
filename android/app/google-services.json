@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "417879502399",
+    "project_id": "giphys-8b193",
+    "storage_bucket": "giphys-8b193.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417879502399:android:58b6e71ab3ea0f4c0c528a",
+        "android_client_info": {
+          "package_name": "com.grupo6.giphy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeDRTl924hpMIyCk8G5ilflf_WjaIMztI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

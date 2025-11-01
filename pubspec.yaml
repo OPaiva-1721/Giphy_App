@@ -1,8 +1,8 @@
-name: aula04
-description: "A new Flutter project."
+name: giphy_ultimate
+description: "O melhor app de GIFs com Giphy - completo e poderoso"
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 2.0.0+1
 
 environment:
   sdk: ^3.9.0
@@ -10,19 +10,108 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_dotenv: ^5.1.0
+  
+  # UI & Icons
   cupertino_icons: ^1.0.8
+  flutter_staggered_grid_view: ^0.7.0
+  shimmer: ^3.0.0
+  flutter_animate: ^4.5.0
+  lottie: ^3.1.0
+  
+  # Network & API
   http: ^1.2.0
-  shared_preferences: ^2.2.2  
+  dio: ^5.4.0
+  cached_network_image: ^3.3.1
+  
+  # State Management
+  provider: ^6.1.1
+  flutter_riverpod: ^2.5.1
+  
+  # Storage & Cache
+  shared_preferences: ^2.2.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.1
+  sqflite: ^2.3.2
+  
+  # Media & Image Processing
+  image_picker: ^1.0.4
+  image: ^4.1.7
+  video_player: ^2.8.2
+  photo_view: ^0.14.0
+  
+  # Sharing & Social
+  share_plus: ^10.0.2
+  url_launcher: ^6.2.4
+  
+  # Authentication
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  google_sign_in: ^6.2.1
+  
+  # Cloud Storage & Database
+  firebase_storage: ^12.3.2
+  cloud_firestore: ^5.4.4
+  
+  # Notifications
+  firebase_messaging: ^15.1.3
+  flutter_local_notifications: ^17.2.3
+  
+  # Analytics
+  firebase_analytics: ^11.3.3
+  
+  # Remote Config
+  firebase_remote_config: ^5.5.0
+  
+  # Utils
+  uuid: ^4.2.1
+  intl: ^0.19.0
+  timeago: ^3.6.1
+  logger: ^2.0.2
+  equatable: ^2.0.5
+  
+  # Permissions
+  permission_handler: ^11.2.0
+  
+  # Connectivity
+  connectivity_plus: ^5.0.2
+  
+  # Rating & Reviews
+  in_app_review: ^2.0.9
+  
+  # Ads (removido)
+  
+  # In-App Purchase
+  in_app_purchase: ^3.1.13
+  
+  # Biometric Auth
+  local_auth: ^2.2.0
+  
+  # QR Code
+  qr_flutter: ^4.1.0
+  
+  # WebView
+  webview_flutter: ^4.5.0
+  
+  # Animations
+  rive: ^0.13.0
+  
+  # Device Info
+  device_info_plus: ^10.1.0
+  package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.8
 
 flutter:
   uses-material-design: true
+  
   assets:
-    - assets/gifs/    # ou liste arquivos específicos:
-    # - assets/gifs/salsicha.gif
-    # - assets/gifs/cat.gif
-    # - assets/gifs/dog.gif
+    - assets/gifs/
+    - .env
+    
