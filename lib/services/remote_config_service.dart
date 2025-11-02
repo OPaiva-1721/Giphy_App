@@ -34,7 +34,7 @@ class RemoteConfigService {
           fetchTimeout: const Duration(seconds: 10),
           minimumFetchInterval: kDebugMode
               ? const Duration(minutes: 1) // Debug: 5 minutos
-              : const Duration(hours: 1), // Produção: 1 hora
+              : const Duration(minutes: 1), // Produção: 1 minuto
         ),
       );
 
@@ -76,17 +76,9 @@ class RemoteConfigService {
     if (_initialized && _remoteConfig != null) {
       try {
         final remoteKey = _remoteConfig!.getString('giphy_api_key');
-        // Obtém a chave local para comparação
-        final localKey =
-            dotenv.env['GIPHY_API_KEY'] ??
-            const String.fromEnvironment(
-              'GIPHY_API_KEY',
-              defaultValue: 'YOUR_API_KEY_HERE',
-            );
-        // Só usa se não for o valor padrão ou se estiver configurado
-        if (remoteKey.isNotEmpty &&
-            remoteKey != 'YOUR_API_KEY_HERE' &&
-            remoteKey != localKey) {
+        // Sempre usa a chave remota se estiver disponível e for válida
+        // Independente de ser igual ou diferente da chave local
+        if (remoteKey.isNotEmpty && remoteKey != 'YOUR_API_KEY_HERE') {
           debugPrint('[RemoteConfigService] Usando API key do Remote Config');
           return remoteKey;
         }
