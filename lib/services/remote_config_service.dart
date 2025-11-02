@@ -27,10 +27,14 @@ class RemoteConfigService {
       _remoteConfig = FirebaseRemoteConfig.instance;
 
       // Configurações padrão (fallback caso não consiga buscar do Firebase)
+      // Em modo debug, busca a cada 5 minutos (atualizações mais rápidas para testes)
+      // Em produção, busca a cada 1 hora (economiza requisições)
       await _remoteConfig!.setConfigSettings(
         RemoteConfigSettings(
           fetchTimeout: const Duration(seconds: 10),
-          minimumFetchInterval: const Duration(hours: 1),
+          minimumFetchInterval: kDebugMode
+              ? const Duration(minutes: 1) // Debug: 5 minutos
+              : const Duration(hours: 1), // Produção: 1 hora
         ),
       );
 

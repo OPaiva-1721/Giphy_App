@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'viewmodels/theme_viewmodel.dart';
 import 'viewmodels/gif_viewmodel.dart';
@@ -26,18 +27,31 @@ void main() async {
   }
 
   // Inicializa Firebase e Remote Config (opcional - não quebra se não configurado)
-  try {
-    await Firebase.initializeApp();
-    debugPrint('[Main] Firebase inicializado com sucesso');
-    
-    // Inicializa Remote Config para permitir atualização remota da API key
-    await RemoteConfigService().initialize();
-    debugPrint('[Main] Remote Config inicializado');
-  } catch (e) {
+  // Na web, só inicializa se tiver FirebaseOptions configuradas
+  if (kIsWeb) {
+    // Na web, Firebase precisa de FirebaseOptions explicitamente
+    // Se não estiver configurado, pula a inicialização
     debugPrint(
-      '[Main] Firebase não configurado. Usando configurações locais (.env ou hardcoded).',
+      '[Main] Plataforma Web detectada. Firebase precisa de firebase_options.dart configurado.',
     );
-    debugPrint('[Main] Erro: $e');
+    debugPrint(
+      '[Main] Pulando inicialização do Firebase. Usando configurações locais (.env ou hardcoded).',
+    );
+  } else {
+    // Para Android/iOS, tenta inicializar normalmente
+    try {
+      await Firebase.initializeApp();
+      debugPrint('[Main] Firebase inicializado com sucesso');
+      
+      // Inicializa Remote Config para permitir atualização remota da API key
+      await RemoteConfigService().initialize();
+      debugPrint('[Main] Remote Config inicializado');
+    } catch (e) {
+      debugPrint(
+        '[Main] Firebase não configurado. Usando configurações locais (.env ou hardcoded).',
+      );
+      debugPrint('[Main] Erro: $e');
+    }
   }
 
   runApp(const GiphyUltimateApp());
