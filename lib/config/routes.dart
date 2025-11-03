@@ -25,31 +25,31 @@ class AppRoutes {
 
       case search:
         return MaterialPageRoute(
-          builder: (_) => const Placeholder(), // TODO: SearchScreen
+          builder: (_) => const Placeholder(),
           settings: routeSettings,
         );
 
       case explore:
         return MaterialPageRoute(
-          builder: (_) => const Placeholder(), // TODO: ExploreScreen
+          builder: (_) => const Placeholder(),
           settings: routeSettings,
         );
 
       case collections:
         return MaterialPageRoute(
-          builder: (_) => const Placeholder(), // TODO: CollectionsScreen
+          builder: (_) => const Placeholder(),
           settings: routeSettings,
         );
 
       case profile:
         return MaterialPageRoute(
-          builder: (_) => const Placeholder(), // TODO: ProfileScreen
+          builder: (_) => const Placeholder(),
           settings: routeSettings,
         );
 
       case AppRoutes.settings:
         return MaterialPageRoute(
-          builder: (_) => const Placeholder(), // TODO: SettingsScreen
+          builder: (_) => const Placeholder(),
           settings: routeSettings,
         );
 

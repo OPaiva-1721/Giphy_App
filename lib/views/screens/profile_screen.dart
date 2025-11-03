@@ -192,7 +192,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        // TODO: Navegar para tela completa de conquistas
                       },
                       child: const Text('Ver todas'),
                     ),
@@ -352,7 +351,6 @@ class _SettingsScreen extends StatelessWidget {
             title: const Text(AppStrings.privacyPolicy),
             trailing: const Icon(Icons.open_in_new),
             onTap: () {
-              // TODO: Abrir política de privacidade
             },
           ),
 
@@ -361,7 +359,6 @@ class _SettingsScreen extends StatelessWidget {
             title: const Text(AppStrings.termsOfService),
             trailing: const Icon(Icons.open_in_new),
             onTap: () {
-              // TODO: Abrir termos de serviço
             },
           ),
 

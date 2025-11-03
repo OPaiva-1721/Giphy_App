@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 /// Serviço de analytics
-/// Nota: Implementação básica. Para produção, integrar com Firebase Analytics
 class AnalyticsService {
   static final AnalyticsService _instance = AnalyticsService._internal();
   factory AnalyticsService() => _instance;
@@ -17,14 +16,11 @@ class AnalyticsService {
   /// Registra evento
   Future<void> logEvent(String name, [Map<String, dynamic>? parameters]) async {
     if (!_enabled) return;
-    
+
     try {
-      debugPrint('[Analytics] Event: $name ${parameters != null ? '- $parameters' : ''}');
-      // TODO: Integrar com Firebase Analytics
-      // await FirebaseAnalytics.instance.logEvent(
-      //   name: name,
-      //   parameters: parameters,
-      // );
+      debugPrint(
+        '[Analytics] Event: $name ${parameters != null ? '- $parameters' : ''}',
+      );
     } catch (e) {
       debugPrint('[Analytics] Error logging event: $e');
     }
@@ -42,10 +38,7 @@ class AnalyticsService {
 
   /// Registra busca
   Future<void> logSearch(String query, int results) async {
-    await logEvent('search', {
-      'search_query': query,
-      'results_count': results,
-    });
+    await logEvent('search', {'search_query': query, 'results_count': results});
   }
 
   /// Registra favorito
@@ -60,10 +53,7 @@ class AnalyticsService {
 
   /// Registra compartilhamento
   Future<void> logShare(String gifId, String method) async {
-    await logEvent('share', {
-      'gif_id': gifId,
-      'share_method': method,
-    });
+    await logEvent('share', {'gif_id': gifId, 'share_method': method});
   }
 
   /// Registra download
@@ -97,14 +87,9 @@ class AnalyticsService {
   /// Define propriedade do usuário
   Future<void> setUserProperty(String name, String value) async {
     if (!_enabled) return;
-    
+
     try {
       debugPrint('[Analytics] User Property: $name = $value');
-      // TODO: Integrar com Firebase Analytics
-      // await FirebaseAnalytics.instance.setUserProperty(
-      //   name: name,
-      //   value: value,
-      // );
     } catch (e) {
       debugPrint('[Analytics] Error setting user property: $e');
     }
@@ -113,14 +98,11 @@ class AnalyticsService {
   /// Define ID do usuário
   Future<void> setUserId(String? userId) async {
     if (!_enabled) return;
-    
+
     try {
       debugPrint('[Analytics] User ID: $userId');
-      // TODO: Integrar com Firebase Analytics
-      // await FirebaseAnalytics.instance.setUserId(id: userId);
     } catch (e) {
       debugPrint('[Analytics] Error setting user ID: $e');
     }
   }
 }
-

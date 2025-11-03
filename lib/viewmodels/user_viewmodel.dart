@@ -61,7 +61,6 @@ class UserViewModel extends ChangeNotifier {
 
   /// Carrega usuário
   Future<void> _loadUser() async {
-    // TODO: Carregar de Firebase Auth quando implementado
     _user = UserModel.empty();
     notifyListeners();
   }
@@ -84,7 +83,6 @@ class UserViewModel extends ChangeNotifier {
     // Verifica se subiu de nível
     if (_level > oldLevel) {
       await _analyticsService.logLevelUp(_level);
-      // TODO: Mostrar notificação de level up
     }
 
     // Verifica conquistas
@@ -102,7 +100,6 @@ class UserViewModel extends ChangeNotifier {
           ],
         );
         await _analyticsService.logAchievementUnlocked(achievement.id);
-        // TODO: Mostrar notificação de conquista
       }
       await _storageService.saveUserStats(_stats);
     }
