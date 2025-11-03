@@ -66,17 +66,25 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Consumer<GifViewModel>(
         builder: (context, viewModel, _) {
-          // Mostra erro se houver
+          // Mostra erro se houver (apenas uma vez)
           if (viewModel.hasError && viewModel.errorMessage != null) {
+            final errorMessage = viewModel.errorMessage!;
             WidgetsBinding.instance.addPostFrameCallback((_) {
+              // Limpa o erro antes de mostrar para evitar loop
+              viewModel.clearError();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(viewModel.errorMessage!),
+                  content: Text(errorMessage),
                   backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 5),
                   action: SnackBarAction(
                     label: 'OK',
                     textColor: Colors.white,
-                    onPressed: () => viewModel.clearError(),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar(
+                        reason: SnackBarClosedReason.action,
+                      );
+                    },
                   ),
                 ),
               );

@@ -10,6 +10,7 @@ import '../services/gamification_service.dart';
 import '../services/analytics_service.dart';
 import '../services/download_service.dart';
 import '../services/share_service.dart';
+import '../services/remote_config_service.dart';
 import '../constants/app_constants.dart';
 import 'package:uuid/uuid.dart';
 
@@ -89,10 +90,10 @@ class GifViewModel extends ChangeNotifier {
     await _storageService.init();
     final favorites = _storageService.getFavorites();
     final collections = _storageService.getCollections();
-    
+
     _favorites = favorites;
     _collections = collections;
-    
+
     debugPrint('[GifViewModel] Favoritos recarregados: ${_favorites.length}');
     notifyListeners();
   }
@@ -118,11 +119,48 @@ class GifViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Verifica se o erro é relacionado a API key inválida
+  bool get isApiKeyError {
+    if (_errorMessage == null) return false;
+    return _errorMessage!.toLowerCase().contains('chave de api') ||
+        _errorMessage!.toLowerCase().contains('api key') ||
+        _errorMessage!.toLowerCase().contains('api_key');
+  }
+
+  /// Tenta atualizar a API key e limpar erro se bem-sucedido
+  Future<bool> tryRefreshApiKey() async {
+    if (!isApiKeyError) return false;
+
+    try {
+      // Força atualização do Remote Config
+      final updated = await RemoteConfigService().forceFetch();
+      if (updated) {
+        final newApiKey = RemoteConfigService().getGiphyApiKey();
+        if (newApiKey.isNotEmpty) {
+          debugPrint('[GifViewModel] API Key atualizada, limpando erro...');
+          clearError();
+          return true;
+        }
+      }
+    } catch (e) {
+      debugPrint('[GifViewModel] Erro ao atualizar API key: $e');
+    }
+    return false;
+  }
+
   // ========== GIF Fetching ==========
 
   /// Busca GIF aleatório
   Future<void> fetchRandomGif() async {
     if (_loading) return;
+
+    // Se há erro de API key, tenta atualizar antes de fazer nova requisição
+    if (isApiKeyError) {
+      final refreshed = await tryRefreshApiKey();
+      if (refreshed) {
+        debugPrint('[GifViewModel] API Key atualizada, continuando busca...');
+      }
+    }
 
     _setLoading(true);
     try {
@@ -145,7 +183,15 @@ class GifViewModel extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('[GifViewModel] Error fetching random GIF: $e');
-      _setError('Erro ao buscar GIF. Verifique sua conexão e tente novamente.');
+      // A mensagem de erro já vem formatada do GiphyService
+      final errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        _setError(errorMessage.substring(11)); // Remove o prefixo "Exception: "
+      } else {
+        _setError(
+          'Erro ao buscar GIF. Verifique sua conexão e tente novamente.',
+        );
+      }
     } finally {
       _setLoading(false);
     }
@@ -154,6 +200,14 @@ class GifViewModel extends ChangeNotifier {
   /// Busca GIF em alta
   Future<void> fetchTrendingGif() async {
     if (_loading) return;
+
+    // Se há erro de API key, tenta atualizar antes de fazer nova requisição
+    if (isApiKeyError) {
+      final refreshed = await tryRefreshApiKey();
+      if (refreshed) {
+        debugPrint('[GifViewModel] API Key atualizada, continuando busca...');
+      }
+    }
 
     _setLoading(true);
     try {
@@ -173,7 +227,15 @@ class GifViewModel extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('[GifViewModel] Error fetching trending GIF: $e');
-      _setError('Erro ao buscar GIF. Verifique sua conexão e tente novamente.');
+      // A mensagem de erro já vem formatada do GiphyService
+      final errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        _setError(errorMessage.substring(11)); // Remove o prefixo "Exception: "
+      } else {
+        _setError(
+          'Erro ao buscar GIF. Verifique sua conexão e tente novamente.',
+        );
+      }
     } finally {
       _setLoading(false);
     }
@@ -202,9 +264,15 @@ class GifViewModel extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('[GifViewModel] Error fetching trending GIFs: $e');
-      _setError(
-        'Erro ao carregar GIFs. Verifique sua conexão e tente novamente.',
-      );
+      // A mensagem de erro já vem formatada do GiphyService
+      final errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        _setError(errorMessage.substring(11)); // Remove o prefixo "Exception: "
+      } else {
+        _setError(
+          'Erro ao carregar GIFs. Verifique sua conexão e tente novamente.',
+        );
+      }
     } finally {
       _setLoading(false);
     }
@@ -234,7 +302,15 @@ class GifViewModel extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('[GifViewModel] Error searching GIF: $e');
-      _setError('Erro ao buscar GIF. Verifique sua conexão e tente novamente.');
+      // A mensagem de erro já vem formatada do GiphyService
+      final errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        _setError(errorMessage.substring(11)); // Remove o prefixo "Exception: "
+      } else {
+        _setError(
+          'Erro ao buscar GIF. Verifique sua conexão e tente novamente.',
+        );
+      }
     } finally {
       _setLoading(false);
     }
@@ -243,6 +319,14 @@ class GifViewModel extends ChangeNotifier {
   /// Busca múltiplos GIFs por query
   Future<void> searchGifs(String query, {int limit = 50}) async {
     if (_loading || query.trim().isEmpty) return;
+
+    // Se há erro de API key, tenta atualizar antes de fazer nova requisição
+    if (isApiKeyError) {
+      final refreshed = await tryRefreshApiKey();
+      if (refreshed) {
+        debugPrint('[GifViewModel] API Key atualizada, continuando busca...');
+      }
+    }
 
     _setLoading(true);
     // Limpa GIFs anteriores para mostrar loading imediatamente
@@ -267,9 +351,15 @@ class GifViewModel extends ChangeNotifier {
       await _analyticsService.logSearch(query, _gifs.length);
     } catch (e) {
       debugPrint('[GifViewModel] Error searching GIFs: $e');
-      _setError(
-        'Erro ao buscar GIFs. Verifique sua conexão e tente novamente.',
-      );
+      // A mensagem de erro já vem formatada do GiphyService
+      final errorMessage = e.toString();
+      if (errorMessage.startsWith('Exception: ')) {
+        _setError(errorMessage.substring(11)); // Remove o prefixo "Exception: "
+      } else {
+        _setError(
+          'Erro ao buscar GIFs. Verifique sua conexão e tente novamente.',
+        );
+      }
     } finally {
       _setLoading(false);
     }
@@ -360,7 +450,9 @@ class GifViewModel extends ChangeNotifier {
       return;
     }
 
-    debugPrint('[GifViewModel] Favorito salvo com sucesso. Total: ${_favorites.length}');
+    debugPrint(
+      '[GifViewModel] Favorito salvo com sucesso. Total: ${_favorites.length}',
+    );
 
     _userStats = _userStats.copyWith(
       gifsFavorited: _userStats.gifsFavorited + 1,

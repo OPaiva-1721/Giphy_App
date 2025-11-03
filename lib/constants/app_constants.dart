@@ -1,24 +1,15 @@
 /// Constantes globais do aplicativo
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/remote_config_service.dart';
 
 class AppConstants {
   // API
   /// Obtém a API Key do Giphy
-  /// Prioridade: 1) Remote Config 2) .env 3) Hardcoded
+  /// Prioridade: 1) Remote Config 2) .env
   static String get giphyApiKey {
     final remoteConfigService = RemoteConfigService();
-    if (remoteConfigService.isAvailable) {
-      return remoteConfigService.getGiphyApiKey();
-    }
-    
-    // Fallback para métodos tradicionais
-    return dotenv.env['GIPHY_API_KEY'] ??
-        const String.fromEnvironment(
-          'GIPHY_API_KEY',
-          defaultValue: 'YOUR_API_KEY_HERE',
-        );
+    return remoteConfigService.getGiphyApiKey();
   }
+
   static const String giphyBaseUrl = 'api.giphy.com';
 
   // Timings

@@ -1,14 +1,65 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../models/gif_model.dart';
 import '../constants/app_constants.dart';
 
 /// Serviço para interação com a API do Giphy
 class GiphyService {
-  final String _apiKey = AppConstants.giphyApiKey;
   final String _baseUrl = AppConstants.giphyBaseUrl;
+  final Connectivity _connectivity = Connectivity();
+
+  /// Obtém a API key dinamicamente (atualizada do Remote Config)
+  String get _apiKey => AppConstants.giphyApiKey;
+
+  /// Verifica o tipo de conexão atual
+  Future<String> _getConnectionType() async {
+    try {
+      final result = await _connectivity.checkConnectivity();
+      // connectivity_plus 5.0+ retorna List<ConnectivityResult>
+      // mas pode variar conforme a versão
+      final List<ConnectivityResult> results =
+          result is List<ConnectivityResult>
+          ? result as List<ConnectivityResult>
+          : [result as ConnectivityResult];
+      // Prioriza WiFi sobre dados móveis
+      if (results.contains(ConnectivityResult.wifi)) {
+        return 'WiFi';
+      } else if (results.contains(ConnectivityResult.mobile)) {
+        return 'Dados Móveis';
+      }
+      return 'Desconhecido';
+    } catch (e) {
+      return 'Desconhecido';
+    }
+  }
+
+  /// Mensagem de erro SSL específica baseada no tipo de conexão
+  Future<String> _getSslErrorMessage() async {
+    final connectionType = await _getConnectionType();
+
+    if (connectionType == 'WiFi') {
+      return 'Erro de conexão no WiFi. Tente usar dados móveis ou outro WiFi.';
+    } else {
+      return 'Erro de conexão SSL. Verifique sua internet e tente novamente.';
+    }
+  }
+
+  /// Valida se a API key está configurada
+  void _validateApiKey() {
+    if (_apiKey.isEmpty) {
+      debugPrint('[GiphyService] ⚠️ API Key está vazia!');
+      debugPrint(
+        '[GiphyService] Configure o Remote Config no Firebase Console ou o arquivo .env',
+      );
+      throw Exception(
+        'Chave de API não configurada. Configure o Firebase Remote Config com a chave "giphy_api_key" ou adicione GIPHY_API_KEY no arquivo .env',
+      );
+    }
+  }
 
   /// Busca GIF aleatório
   Future<GifModel?> getRandomGif({
@@ -16,6 +67,7 @@ class GiphyService {
     String rating = 'g',
     String? randomId,
   }) async {
+    _validateApiKey();
     try {
       final params = <String, String>{
         'api_key': _apiKey,
@@ -38,9 +90,11 @@ class GiphyService {
           return GifModel.fromJson(data);
         }
       } else if (response.statusCode == 401 || response.statusCode == 403) {
-        debugPrint('[GiphyService] API Key inválida ou ausente');
+        debugPrint(
+          '[GiphyService] API Key inválida ou ausente (HTTP ${response.statusCode})',
+        );
         throw Exception(
-          'Chave de API inválida. Verifique sua GIPHY_API_KEY no arquivo .env',
+          'Chave de API inválida. Configure o Firebase Remote Config com a chave "giphy_api_key" ou adicione GIPHY_API_KEY no arquivo .env',
         );
       } else if (response.statusCode >= 500) {
         debugPrint('[GiphyService] Erro no servidor: ${response.statusCode}');
@@ -49,15 +103,34 @@ class GiphyService {
         debugPrint('[GiphyService] Random GIF error: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('[GiphyService] Error getting random GIF: $e');
       final errorString = e.toString();
-      if (errorString.contains('HandshakeException') ||
-          errorString.contains('CERTIFICATE_VERIFY_FAILED') ||
-          errorString.contains('TlsException')) {
+
+      // Erros de DNS/hostname lookup
+      if (errorString.contains('Failed host lookup') ||
+          errorString.contains('No address associated with hostname') ||
+          errorString.contains('SocketException') ||
+          e is SocketException) {
         throw Exception(
-          'Erro de certificado SSL. Isso pode ocorrer em emuladores. Tente em um dispositivo real ou verifique sua configuração de rede.',
+          'Erro de conexão. Verifique sua internet e tente novamente.',
         );
       }
+
+      // Erros de certificado SSL
+      if (errorString.contains('HandshakeException') ||
+          errorString.contains('CERTIFICATE_VERIFY_FAILED') ||
+          errorString.contains('TlsException') ||
+          errorString.contains('CertificateException') ||
+          errorString.contains('SSL')) {
+        final errorMessage = await _getSslErrorMessage();
+        throw Exception(errorMessage);
+      }
+
+      // Erros de timeout
+      if (errorString.contains('TimeoutException') ||
+          errorString.contains('timed out')) {
+        throw Exception('Tempo de conexão esgotado. Tente novamente.');
+      }
+
       if (e is Exception) rethrow;
       throw Exception('Erro de conexão. Verifique sua internet.');
     }
@@ -70,6 +143,7 @@ class GiphyService {
     int limit = 25,
     int offset = 0,
   }) async {
+    _validateApiKey();
     try {
       final params = {
         'api_key': _apiKey,
@@ -91,9 +165,11 @@ class GiphyService {
 
         return list.map((item) => GifModel.fromJson(item)).toList();
       } else if (response.statusCode == 401 || response.statusCode == 403) {
-        debugPrint('[GiphyService] API Key inválida ou ausente');
+        debugPrint(
+          '[GiphyService] API Key inválida ou ausente (HTTP ${response.statusCode})',
+        );
         throw Exception(
-          'Chave de API inválida. Verifique sua GIPHY_API_KEY no arquivo .env',
+          'Chave de API inválida. Configure o Firebase Remote Config com a chave "giphy_api_key" ou adicione GIPHY_API_KEY no arquivo .env',
         );
       } else if (response.statusCode >= 500) {
         debugPrint('[GiphyService] Erro no servidor: ${response.statusCode}');
@@ -102,15 +178,34 @@ class GiphyService {
         debugPrint('[GiphyService] Trending error: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('[GiphyService] Error getting trending: $e');
       final errorString = e.toString();
-      if (errorString.contains('HandshakeException') ||
-          errorString.contains('CERTIFICATE_VERIFY_FAILED') ||
-          errorString.contains('TlsException')) {
+
+      // Erros de DNS/hostname lookup
+      if (errorString.contains('Failed host lookup') ||
+          errorString.contains('No address associated with hostname') ||
+          errorString.contains('SocketException') ||
+          e is SocketException) {
         throw Exception(
-          'Erro de certificado SSL. Isso pode ocorrer em emuladores. Tente em um dispositivo real ou verifique sua configuração de rede.',
+          'Erro de conexão. Verifique sua internet e tente novamente.',
         );
       }
+
+      // Erros de certificado SSL
+      if (errorString.contains('HandshakeException') ||
+          errorString.contains('CERTIFICATE_VERIFY_FAILED') ||
+          errorString.contains('TlsException') ||
+          errorString.contains('CertificateException') ||
+          errorString.contains('SSL')) {
+        final errorMessage = await _getSslErrorMessage();
+        throw Exception(errorMessage);
+      }
+
+      // Erros de timeout
+      if (errorString.contains('TimeoutException') ||
+          errorString.contains('timed out')) {
+        throw Exception('Tempo de conexão esgotado. Tente novamente.');
+      }
+
       if (e is Exception) rethrow;
       throw Exception('Erro de conexão. Verifique sua internet.');
     }
@@ -134,6 +229,7 @@ class GiphyService {
     int limit = 50,
     int offset = 0,
   }) async {
+    _validateApiKey();
     try {
       final params = {
         'api_key': _apiKey,
@@ -157,9 +253,11 @@ class GiphyService {
 
         return list.map((item) => GifModel.fromJson(item)).toList();
       } else if (response.statusCode == 401 || response.statusCode == 403) {
-        debugPrint('[GiphyService] API Key inválida ou ausente');
+        debugPrint(
+          '[GiphyService] API Key inválida ou ausente (HTTP ${response.statusCode})',
+        );
         throw Exception(
-          'Chave de API inválida. Verifique sua GIPHY_API_KEY no arquivo .env',
+          'Chave de API inválida. Configure o Firebase Remote Config com a chave "giphy_api_key" ou adicione GIPHY_API_KEY no arquivo .env',
         );
       } else if (response.statusCode >= 500) {
         debugPrint('[GiphyService] Erro no servidor: ${response.statusCode}');
@@ -168,15 +266,34 @@ class GiphyService {
         debugPrint('[GiphyService] Search error: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('[GiphyService] Error searching GIFs: $e');
       final errorString = e.toString();
-      if (errorString.contains('HandshakeException') ||
-          errorString.contains('CERTIFICATE_VERIFY_FAILED') ||
-          errorString.contains('TlsException')) {
+
+      // Erros de DNS/hostname lookup
+      if (errorString.contains('Failed host lookup') ||
+          errorString.contains('No address associated with hostname') ||
+          errorString.contains('SocketException') ||
+          e is SocketException) {
         throw Exception(
-          'Erro de certificado SSL. Isso pode ocorrer em emuladores. Tente em um dispositivo real ou verifique sua configuração de rede.',
+          'Erro de conexão. Verifique sua internet e tente novamente.',
         );
       }
+
+      // Erros de certificado SSL
+      if (errorString.contains('HandshakeException') ||
+          errorString.contains('CERTIFICATE_VERIFY_FAILED') ||
+          errorString.contains('TlsException') ||
+          errorString.contains('CertificateException') ||
+          errorString.contains('SSL')) {
+        final errorMessage = await _getSslErrorMessage();
+        throw Exception(errorMessage);
+      }
+
+      // Erros de timeout
+      if (errorString.contains('TimeoutException') ||
+          errorString.contains('timed out')) {
+        throw Exception('Tempo de conexão esgotado. Tente novamente.');
+      }
+
       if (e is Exception) rethrow;
       throw Exception('Erro de conexão. Verifique sua internet.');
     }
@@ -213,6 +330,7 @@ class GiphyService {
 
   /// Busca GIFs por IDs
   Future<List<GifModel>> getGifsByIds(List<String> ids) async {
+    _validateApiKey();
     try {
       if (ids.isEmpty) return [];
 
@@ -239,6 +357,7 @@ class GiphyService {
 
   /// Busca GIF por ID
   Future<GifModel?> getGifById(String id) async {
+    _validateApiKey();
     try {
       final params = {'api_key': _apiKey};
       final uri = Uri.https(_baseUrl, '/v1/gifs/$id', params);
@@ -263,6 +382,7 @@ class GiphyService {
 
   /// Busca sugestões de autocomplete
   Future<List<String>> getAutocompleteSuggestions(String query) async {
+    _validateApiKey();
     try {
       if (query.trim().isEmpty) return [];
 
@@ -289,6 +409,7 @@ class GiphyService {
 
   /// Busca categorias trending
   Future<List<String>> getTrendingSearches() async {
+    _validateApiKey();
     try {
       final params = {'api_key': _apiKey};
       final uri = Uri.https(_baseUrl, '/v1/trending/searches', params);

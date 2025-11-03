@@ -8,6 +8,7 @@ import '../../constants/app_colors.dart';
 import '../../utils/helpers.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/achievement_badge.dart';
+import 'debug_screen.dart';
 
 /// Tela de perfil e estatísticas
 class ProfileScreen extends StatelessWidget {
@@ -295,6 +296,34 @@ class _SettingsScreen extends StatelessWidget {
                 subtitle: const Text('Busca novos GIFs automaticamente'),
                 value: gifViewModel.autoShuffle,
                 onChanged: (_) => gifViewModel.toggleAutoShuffle(),
+              );
+            },
+          ),
+
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              'Debug',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.bug_report),
+            title: const Text('Logs / Debug'),
+            subtitle: const Text('Ver status do Firebase e API Key'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const DebugScreen(),
+                ),
               );
             },
           ),

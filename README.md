@@ -113,6 +113,7 @@ lib/
 │   ├── download_service.dart
 │   ├── gamification_service.dart
 │   ├── giphy_service.dart
+│   ├── remote_config_service.dart
 │   ├── share_service.dart
 │   └── storage_service.dart
 ├── viewmodels/          # Lógica de negócios (MVVM)
@@ -124,6 +125,7 @@ lib/
 ├── views/               # Interface do usuário
 │   ├── screens/         # Telas principais
 │   │   ├── collections_screen.dart
+│   │   ├── debug_screen.dart
 │   │   ├── explore_screen.dart
 │   │   ├── home_screen.dart
 │   │   ├── main_screen.dart
@@ -132,9 +134,15 @@ lib/
 │   └── widgets/         # Widgets reutilizáveis
 │       ├── achievement_badge.dart
 │       ├── category_chip.dart
+│       ├── comments_dialog.dart
+│       ├── controls_widget.dart
+│       ├── editor_dialog.dart
+│       ├── favorites_page.dart
 │       ├── gif_card.dart
+│       ├── gif_display_widget.dart
 │       ├── gif_player.dart
-│       └── stat_card.dart
+│       ├── stat_card.dart
+│       └── stats_dialog.dart
 ├── utils/               # Utilitários
 │   ├── app_theme.dart   # Temas do app
 │   └── helpers.dart     # Funções auxiliares
@@ -171,6 +179,7 @@ View → ViewModel → Service → API/Storage
 
 ### State Management
 - `provider` - Gerenciamento de estado
+- `flutter_riverpod` - Gerenciamento de estado alternativo (opcional)
 
 ### Network & API
 - `http` - Requisições HTTP
@@ -182,11 +191,22 @@ View → ViewModel → Service → API/Storage
 - `sqflite` - Banco de dados SQL
 - `path_provider` - Caminhos do sistema
 
+### Firebase (Opcional)
+- `firebase_core` - Core do Firebase
+- `firebase_auth` - Autenticação
+- `firebase_remote_config` - Configurações remotas
+- `firebase_analytics` - Analytics
+- `firebase_storage` - Armazenamento na nuvem
+- `cloud_firestore` - Banco de dados NoSQL na nuvem
+- `firebase_messaging` - Notificações push
+
 ### Utilities
 - `uuid` - Geração de IDs únicos
 - `intl` - Internacionalização e formatação
 - `timeago` - Tempo relativo
 - `equatable` - Comparação de objetos
+- `logger` - Sistema de logs
+- `flutter_dotenv` - Carregamento de variáveis de ambiente (.env)
 
 ### Sharing & Social
 - `share_plus` - Compartilhamento
@@ -227,6 +247,8 @@ View → ViewModel → Service → API/Storage
 - [x] Analytics (base implementada)
 - [x] Tratamento de erros com feedback visual
 - [x] Configuração via arquivo `.env`
+- [x] Firebase Remote Config (atualização remota de API keys)
+- [x] Tela de Debug para verificação de configurações
 
 ## 🔮 Funcionalidades Futuras
 
@@ -236,10 +258,12 @@ View → ViewModel → Service → API/Storage
 - [ ] Sistema de notificações
 - [ ] GIF do dia
 - [ ] Widgets para home screen
-- [ ] Integração com Firebase
+- [ ] Integração completa com Firebase
+  - [x] Firebase Remote Config (implementado)
+  - [x] Firebase Core (implementado)
   - [ ] Authentication (Google, Facebook, Apple)
   - [ ] Cloud Firestore (sync entre dispositivos)
-  - [ ] Firebase Analytics
+  - [ ] Firebase Analytics completo
   - [ ] Crash Reporting
 - [ ] Teclado de GIFs (Android/iOS)
 - [ ] Recursos sociais
@@ -327,6 +351,8 @@ Este app utiliza a [Giphy API](https://developers.giphy.com/docs/api) para busca
 - **Arquivo `.env`**: Este arquivo contém sua API Key e não deve ser commitado no Git. Ele já está no `.gitignore`.
 - **`.env.example`**: Template do arquivo de configuração. Use como referência para criar seu próprio `.env`.
 - **Tratamento de Erros**: O app exibe mensagens de erro claras para problemas de conexão, API Key inválida ou erros do servidor.
+- **Firebase Remote Config**: O app suporta atualização remota da API Key via Firebase Remote Config. Se configurado, a chave do Remote Config tem prioridade sobre o `.env`. Veja a tela de Debug (acessível pelo perfil) para verificar o status.
+- **Firebase Opcional**: O Firebase é opcional. O app funciona normalmente sem ele, usando apenas o arquivo `.env` para configuração.
 
 ## 🛠️ Desenvolvimento
 

@@ -84,18 +84,26 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
       body: Consumer<SearchViewModel>(
         builder: (context, searchViewModel, _) {
-          // Mostra erro se houver
+          // Mostra erro se houver (apenas uma vez)
           if (searchViewModel.hasError &&
               searchViewModel.errorMessage != null) {
+            final errorMessage = searchViewModel.errorMessage!;
             WidgetsBinding.instance.addPostFrameCallback((_) {
+              // Limpa o erro antes de mostrar para evitar loop
+              searchViewModel.clearError();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(searchViewModel.errorMessage!),
+                  content: Text(errorMessage),
                   backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 5),
                   action: SnackBarAction(
                     label: 'OK',
                     textColor: Colors.white,
-                    onPressed: () => searchViewModel.clearError(),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar(
+                        reason: SnackBarClosedReason.action,
+                      );
+                    },
                   ),
                 ),
               );

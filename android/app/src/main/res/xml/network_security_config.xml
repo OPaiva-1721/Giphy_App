@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Configuração para permitir conexões HTTPS com certificados válidos -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Confia em certificados do sistema -->
+            <certificates src="system" />
+            <!-- Confia em certificados instalados pelo usuário (para desenvolvimento) -->
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Configuração específica para api.giphy.com -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.giphy.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+    
+    <!-- Permite conexões para outros domínios do Giphy -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">giphy.com</domain>
+        <domain includeSubdomains="true">media.giphy.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
+

@@ -40,17 +40,46 @@ void main() async {
   } else {
     // Para Android/iOS, tenta inicializar normalmente
     try {
+      debugPrint('[Main] Inicializando Firebase...');
       await Firebase.initializeApp();
-      debugPrint('[Main] Firebase inicializado com sucesso');
-      
+      debugPrint('[Main] ✅ Firebase inicializado com sucesso');
+
       // Inicializa Remote Config para permitir atualização remota da API key
-      await RemoteConfigService().initialize();
-      debugPrint('[Main] Remote Config inicializado');
-    } catch (e) {
+      debugPrint('[Main] Inicializando Remote Config...');
+      final remoteConfigInitialized = await RemoteConfigService().initialize();
+      if (remoteConfigInitialized) {
+        debugPrint('[Main] ✅ Remote Config inicializado');
+        // Força uma busca imediata para garantir que temos a chave
+        try {
+          await RemoteConfigService().forceFetch();
+          final apiKey = RemoteConfigService().getGiphyApiKey();
+          debugPrint(
+            '[Main] API Key status: ${apiKey.isNotEmpty ? "✅ Configurada" : "❌ VAZIA"}',
+          );
+        } catch (e) {
+          debugPrint('[Main] ⚠️ Erro ao forçar busca do Remote Config: $e');
+        }
+      } else {
+        debugPrint('[Main] ⚠️ Remote Config não inicializado, usando .env');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('[Main] ❌ Erro ao inicializar Firebase: $e');
+      debugPrint('[Main] Stack trace: $stackTrace');
       debugPrint(
-        '[Main] Firebase não configurado. Usando configurações locais (.env ou hardcoded).',
+        '[Main] Firebase não configurado. Usando configurações locais (.env).',
       );
-      debugPrint('[Main] Erro: $e');
+
+      // Verifica se .env tem a chave
+      try {
+        final envKey = dotenv.env['GIPHY_API_KEY'] ?? '';
+        if (envKey.isNotEmpty) {
+          debugPrint('[Main] ✅ Encontrou GIPHY_API_KEY no .env');
+        } else {
+          debugPrint('[Main] ❌ GIPHY_API_KEY não encontrado no .env');
+        }
+      } catch (e) {
+        debugPrint('[Main] ⚠️ Erro ao ler .env: $e');
+      }
     }
   }
 
