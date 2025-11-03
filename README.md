@@ -58,13 +58,13 @@
 1. **Clone o repositório**
 ```bash
 git clone https://github.com/seu-usuario/giphy-ultimate.git
-cd giphy-ultimate
+cd Giphy_App
 ```
 
 2. **Configure a API Key do Giphy**
    - Acesse [Giphy Developers](https://developers.giphy.com/)
    - Crie uma conta e obtenha sua API Key
-   - Copie o arquivo `.env.example` para `.env`:
+   - Crie um arquivo `.env` na raiz do projeto baseado no `.env.example`:
    ```bash
    # Windows PowerShell
    Copy-Item .env.example .env
@@ -404,9 +404,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 👨‍💻 Autor
 
-**Seu Nome**
-- GitHub: [@seu-usuario](https://github.com/seu-usuario)
-- Email: seu.email@example.com
+Desenvolvido com ❤️ usando Flutter
 
 ## 🙏 Agradecimentos
 
@@ -418,9 +416,8 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 Se você tiver alguma dúvida ou problema:
 
-1. Verifique a seção de [Issues](https://github.com/seu-usuario/giphy-ultimate/issues)
+1. Verifique a seção de Issues do repositório
 2. Abra uma nova issue se necessário
-3. Entre em contato: seu.email@example.com
 
 ---
 

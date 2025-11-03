@@ -48,3 +48,19 @@ app.*.map.json
 .env
 .env.local
 .env.*.local
+
+# Firebase & Google Services (contém API keys sensíveis)
+**/google-services.json
+**/GoogleService-Info.plist
+**/google-services.json.bak
+
+# Android local properties (caminhos específicos do usuário)
+**/local.properties
+
+# iOS Pods (gerado automaticamente)
+**/Pods/
+**/Podfile.lock
+
+# Build artifacts (já coberto, mas garantindo)
+**/build/
+**/.dart_tool/
